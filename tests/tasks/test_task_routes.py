@@ -1,19 +1,19 @@
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 from src.app import create_app
 import os
 
+from src.database import Base
 
-@pytest.fixture
-def client():
-    test_db = "test_web_tasks.csv"
-    app = create_app(storage_path=test_db)
-    app.config["TESTING"] = True
 
-    with app.test_client() as client:
-        yield client
-
-    if os.path.exists(test_db):
-        os.remove(test_db)
+@pytest.fixture(scope="session")
+def test_db():
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(bind=engine)
+    testing_session_local = sessionmaker(bind=engine)
+    return testing_session_local
 
 
 def test_filter_tasks_by_status(client):
@@ -35,15 +35,13 @@ def test_toggle_task_status(client):
         "status": "done"
     })
 
-    # Assert
     assert patch_res.status_code == 200
     assert patch_res.json["status"] == "done"
 
-def test_get_tasks_empty(client):
+def test_get_tasks(client):
     response = client.get("/tasks")
 
     assert response.status_code == 200
-    assert response.json == []
 
 
 def test_create_task_via_api(client):

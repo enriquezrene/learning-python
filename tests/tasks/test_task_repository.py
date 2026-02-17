@@ -1,13 +1,11 @@
 import pytest
-from src.task import Task, TaskStatus
-from src.task_repository import TaskRepository  # Ensure this matches your file name
+from src.models.task_model import Task, TaskStatus
+from src.tasks.task_repository import TaskRepository  # Ensure this matches your file name
 
 
 @pytest.fixture
-def repo():
-    # 'sqlite://' creates a fresh database in RAM for every test
-    repository = TaskRepository("sqlite://")
-    return repository
+def repo(test_db):
+    return TaskRepository(session_factory=test_db)
 
 
 def test_create_and_fetch_task(repo):

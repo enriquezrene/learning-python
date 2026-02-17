@@ -1,11 +1,11 @@
 import uuid
-from src.task import Task, TaskStatus
+from src.tasks.task_domain import Task, TaskStatus
 from typing import Optional
 
-from src.task_repository import TaskRepository
+from src.tasks.task_repository import TaskRepository
 
 
-class TodoList:
+class TaskService:
     def __init__(self, repository: TaskRepository):
         self.repository = repository
 
@@ -27,8 +27,12 @@ class TodoList:
             raise ValueError(f"Task {task_id} not found")
 
         for key, value in kwargs.items():
-            if hasattr(task, key):
-                setattr(task, key, value)
+            if key == "status" and isinstance(value, str):
+                try:
+                    value = TaskStatus(value.lower())
+                except ValueError:
+                    raise ValueError(f"Invalid status: {value}")
+            setattr(task, key, value)
 
         self.repository.update(task)
         return task

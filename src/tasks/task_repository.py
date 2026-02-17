@@ -1,15 +1,12 @@
-from sqlalchemy import create_engine, select
+from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
-from src.models import Base, TaskModel
-from src.task import Task
+from src.models.task_model import TaskModel
+from src.tasks.task_domain import Task
 
 
 class TaskRepository:
-    def __init__(self, db_url: str):
-        if db_url.startswith("postgres://"):
-            db_url = db_url.replace("postgres://", "postgresql://", 1)
-        self.engine = create_engine(db_url)
-        self.Session = sessionmaker(bind=self.engine)
+    def __init__(self, session_factory: sessionmaker):
+        self.Session = session_factory
 
     def create(self, task: Task):
         with self.Session() as session:

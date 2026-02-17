@@ -1,5 +1,5 @@
 import uuid
-from src.task import Task, TaskStatus
+from src.models.task_model import Task, TaskStatus
 
 
 def test_task_has_unique_uuid():

@@ -1,4 +1,3 @@
-from src.models import Base
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -6,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from src.models import Base  # Import your Base here
+from src.database import Base
 target_metadata = Base.metadata
 
 from dotenv import load_dotenv

@@ -2,7 +2,6 @@ import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 
-
 class TaskStatus(Enum):
     PENDING = "pending"
     IN_PROGRESS = "in progress"

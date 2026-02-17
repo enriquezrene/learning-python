@@ -1,10 +1,9 @@
 from sqlalchemy import String, Uuid, Enum as SQLEnum
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from src.task import TaskStatus, Task
+from sqlalchemy.orm import Mapped, mapped_column
+from src.tasks.task_domain import Task, TaskStatus
 import uuid
+from src.database import Base
 
-class Base(DeclarativeBase):
-    pass
 
 class TaskModel(Base):
     __tablename__ = "tasks"
@@ -24,7 +23,7 @@ class TaskModel(Base):
         )
 
     def to_entity(self) -> Task:
-        return Task(
+        return TaskModel(
             id=self.id,
             title=self.title,
             description=self.description,
