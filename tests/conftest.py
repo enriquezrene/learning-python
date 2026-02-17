@@ -34,7 +34,7 @@ def client(test_db):
     session = test_db()
     repo = TaskRepository(session_factory=lambda: session)
 
-    app.config['TODO_SERVICE'] = TaskService(repo)
+    app.config['TASK_SERVICE'] = TaskService(repo)
 
     with app.test_client() as client:
         yield client

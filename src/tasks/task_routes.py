@@ -1,6 +1,5 @@
 import uuid
 from flask import Blueprint, jsonify, request, current_app
-from src.models.task_model import TaskStatus
 
 tasks_bp = Blueprint('tasks', __name__)
 
@@ -14,7 +13,7 @@ def handle_runtime_error(e):
 
 @tasks_bp.route("/tasks/<task_id>", methods=["PATCH"])
 def update_task(task_id):
-    todo_service = current_app.config['TODO_SERVICE']
+    todo_service = current_app.config['TASK_SERVICE']
     data = request.get_json()
 
     target_id = uuid.UUID(task_id)
@@ -25,7 +24,7 @@ def update_task(task_id):
 
 @tasks_bp.route("/tasks", methods=["GET"])
 def get_tasks():
-    todo_service = current_app.config['TODO_SERVICE']
+    todo_service = current_app.config['TASK_SERVICE']
     status_str = request.args.get("status")
     search_term = request.args.get("q")
 
@@ -36,7 +35,7 @@ def get_tasks():
 @tasks_bp.route("/tasks/<task_id>", methods=["DELETE"])
 def delete_task(task_id):
     target_id = uuid.UUID(task_id)
-    todo_service = current_app.config['TODO_SERVICE']
+    todo_service = current_app.config['TASK_SERVICE']
     result = todo_service.remove_task(target_id)
     if result:
         return '', 204
@@ -51,7 +50,7 @@ def add_task():
     if not data or "title" not in data:
         return jsonify({"error": "Title is required"}), 400
 
-    todo_service = current_app.config['TODO_SERVICE']
+    todo_service = current_app.config['TASK_SERVICE']
     new_task = todo_service.add_task(
         title=data["title"],
         description=data.get("description", "")
