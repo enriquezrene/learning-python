@@ -12,7 +12,7 @@ class TaskModel(Base):
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(String(500), nullable=True)
-    status: Mapped[TaskStatus] = mapped_column(SQLEnum(TaskStatus), default=TaskStatus.PENDING)
+    status: Mapped[TaskStatus] = mapped_column(SQLEnum(TaskStatus, name="task_status"), default=TaskStatus.PENDING)
 
     @classmethod
     def from_entity(cls, task: Task):
