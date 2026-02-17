@@ -1,16 +1,19 @@
-import uuid
+import uuid, os
 from flask import Flask, jsonify, request
 
 from src.task import TaskStatus
+from src.task_repository import TaskRepository
 from src.todo_list import TodoList
-from src.storage import CSVStorage
 
-
-def create_app(storage_path="tasks.csv"):
+def create_app():
     app = Flask(__name__)
-    storage = CSVStorage(storage_path)
+    db_url = os.environ.get("DATABASE_URL")
+    if db_url:
+        task_repository = TaskRepository(db_url)
+    else:
+        task_repository = TaskRepository("sqlite:///local_dev.db")
 
-    todo_service = TodoList(storage=storage)
+    todo_service = TodoList(repository=task_repository)
 
     @app.route("/tasks/<task_id>", methods=["PATCH"])
     def update_task(task_id):
