@@ -31,9 +31,10 @@ class TaskRepository:
         with self.Session() as session:
             db_task = session.get(TaskModel, task_id)
             if not db_task:
-                raise ValueError(f"Task with ID {task_id} not found.")
+                return False
             session.delete(db_task)
             session.commit()
+            return True
 
     def get_by_id(self, task_id):
         with self.Session() as session:

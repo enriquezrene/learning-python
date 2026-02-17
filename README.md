@@ -16,3 +16,9 @@ Once you have enabled the environment
 ```shell
 (venv) $ python -m pip install <package-name>
 ```
+
+## DB Migrations
+The project uses alembic to manage migrations, make sure you run the following command to have the db up-to-date
+```shell
+alembic upgrade head
+```

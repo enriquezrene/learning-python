@@ -1,4 +1,6 @@
 import uuid
+
+from sqlalchemy.exc import SQLAlchemyError
 from src.tasks.task_domain import Task, TaskStatus
 from typing import Optional
 
@@ -14,28 +16,37 @@ class TaskService:
         self.repository.create(new_task)
         return new_task
 
-    def remove_task(self, task_id: uuid.UUID) -> None:
-        self.repository.delete(task_id)
+    def remove_task(self, task_id: uuid.UUID) -> bool:
+        return self.repository.delete(task_id)
 
     def get_task(self, task_id: uuid.UUID) -> Optional[Task]:
         return self.repository.get_by_id(task_id)
 
     def update_task(self, task_id: uuid.UUID, **kwargs):
-        task = self.repository.get_by_id(task_id)
+        try:
+            task = self.repository.get_by_id(task_id)
 
-        if not task:
-            raise ValueError(f"Task {task_id} not found")
+            if not task:
+                return None
 
-        for key, value in kwargs.items():
-            if key == "status" and isinstance(value, str):
-                try:
-                    value = TaskStatus(value.lower())
-                except ValueError:
-                    raise ValueError(f"Invalid status: {value}")
-            setattr(task, key, value)
+            for key, value in kwargs.items():
+                if hasattr(task, key):
+                    # Handle Enum conversion logic
+                    if key == "status" and isinstance(value, str):
+                        value = TaskStatus(value.lower())
+                    setattr(task, key, value)
 
-        self.repository.update(task)
-        return task
+            self.repository.update(task)
+            return task
+        except ValueError as e:
+            raise e
+        except SQLAlchemyError:
+            raise RuntimeError("Database operation failed")
 
     def list_tasks(self, status=None, search_term=None):
+        if isinstance(status, str):
+            try:
+                status = TaskStatus(status.lower())
+            except ValueError:
+                raise ValueError(f"'{status}' is not a valid task status")
         return self.repository.get_all(status=status, search_term=search_term)

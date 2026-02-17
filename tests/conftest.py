@@ -6,7 +6,6 @@ from src.database import Base
 from src.tasks.task_service import TaskService
 from src.tasks.task_repository import TaskRepository
 
-
 @pytest.fixture(scope="session")
 def test_engine():
     engine = create_engine("sqlite:///:memory:")
@@ -30,6 +29,7 @@ def test_db(test_engine):
 def client(test_db):
     app = create_app()
     app.config.update({"TESTING": True})
+    app.config.update({"PROPAGATE_EXCEPTIONS": True})
 
     session = test_db()
     repo = TaskRepository(session_factory=lambda: session)

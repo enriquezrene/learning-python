@@ -2,50 +2,48 @@ import uuid
 from flask import Blueprint, jsonify, request, current_app
 from src.models.task_model import TaskStatus
 
-tasks_blueprint = Blueprint('tasks', __name__)
+tasks_bp = Blueprint('tasks', __name__)
 
+@tasks_bp.errorhandler(ValueError)
+def handle_value_error(e):
+    return jsonify({"error": str(e)}), 400
 
-@tasks_blueprint.route("/tasks/<task_id>", methods=["PATCH"])
+@tasks_bp.errorhandler(RuntimeError)
+def handle_runtime_error(e):
+    return jsonify({"error": "A server error occurred"}), 500
+
+@tasks_bp.route("/tasks/<task_id>", methods=["PATCH"])
 def update_task(task_id):
     todo_service = current_app.config['TODO_SERVICE']
     data = request.get_json()
-    try:
-        target_id = uuid.UUID(task_id)
-        updated_task = todo_service.update_task(target_id, **data)
-        if not updated_task:
-            return jsonify({"error": "Task not found"}), 404
-        return jsonify({"id": str(updated_task.id), "status": updated_task.status.value}), 200
-    except (ValueError, KeyError):
-        return jsonify({"error": "Invalid data or ID"}), 400
 
+    target_id = uuid.UUID(task_id)
+    updated_task = todo_service.update_task(target_id, **data)
+    if not updated_task:
+        return jsonify({"error": "Task not found"}), 404
+    return jsonify({"id": str(updated_task.id), "status": updated_task.status.value}), 200
 
-@tasks_blueprint.route("/tasks", methods=["GET"])
+@tasks_bp.route("/tasks", methods=["GET"])
 def get_tasks():
     todo_service = current_app.config['TODO_SERVICE']
     status_str = request.args.get("status")
     search_term = request.args.get("q")
 
-    status_filter = None
-    if status_str:
-        try:
-            status_filter = TaskStatus(status_str.lower())
-        except ValueError:
-            return jsonify({"error": "Invalid status"}), 400
+    tasks = todo_service.list_tasks(status=status_str, search_term=search_term)
 
-    tasks = todo_service.list_tasks(status=status_filter, search_term=search_term)
     return jsonify([{"id": str(t.id), "title": t.title, "status": t.status.value} for t in tasks])
 
-@tasks_blueprint.route("/tasks/<task_id>", methods=["DELETE"])
+@tasks_bp.route("/tasks/<task_id>", methods=["DELETE"])
 def delete_task(task_id):
-    try:
-        target_id = uuid.UUID(task_id)
-        todo_service = current_app.config['TODO_SERVICE']
-        todo_service.remove_task(target_id)
+    target_id = uuid.UUID(task_id)
+    todo_service = current_app.config['TODO_SERVICE']
+    result = todo_service.remove_task(target_id)
+    if result:
         return '', 204
-    except ValueError:
-        return jsonify({"error": "Invalid ID format"}), 400
+    return jsonify({"error": "Task not found"}), 404
 
-@tasks_blueprint.route("/tasks", methods=["POST"])
+
+@tasks_bp.route("/tasks", methods=["POST"])
 def add_task():
     data = request.get_json()
 
