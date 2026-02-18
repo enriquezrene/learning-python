@@ -24,16 +24,11 @@ def update_task(task_id):
 
 @tasks_bp.route("/tasks", methods=["GET"])
 def get_tasks():
-    print(1)
     todo_service = current_app.config['TASK_SERVICE']
-    print(2, todo_service)
     status_str = request.args.get("status")
-    print(3, status_str)
     search_term = request.args.get("q")
-    print(4, search_term)
 
     tasks = todo_service.list_tasks(status=status_str, search_term=search_term)
-    print(5, tasks)
 
     return jsonify([{"id": str(t.id), "title": t.title, "status": t.status.value} for t in tasks])
 
