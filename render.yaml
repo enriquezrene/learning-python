@@ -7,7 +7,6 @@ services:
         fromDatabase:
           name: pg-learning-python
           property: connectionString
-    preDeployCommand: alembic upgrade head
     plan: free
 
 databases:

@@ -10,16 +10,20 @@ from src.tasks.task_service import TaskService
 
 
 def create_app(task_service: TaskService = None):
+    print("creating app", task_service)
     app = Flask(__name__)
 
     # If NO service is provided, we build the production version
     if task_service is None:
         # Render provides DATABASE_URL
         db_url = os.getenv("DATABASE_URL", "sqlite:///app.db")
+        print("db_url", db_url)
 
         # SQLAlchemy 1.4+ fix for Render's 'postgres://' prefix
         if db_url.startswith("postgres://"):
             db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+        print("db_url fixed", db_url)
 
         engine = create_engine(db_url)
         session_factory = sessionmaker(bind=engine)
